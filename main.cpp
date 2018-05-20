@@ -11,6 +11,51 @@
 #include <string>
 using namespace std;
 
+void printWordPortion(int& pL, ostream& outf, char wordPortion[]);
+void printWordPortion2(int& lL, int& pL, ostream& outf, char wordPortion[]);
+void printWordPortion3(int situation, int lineLength, int lL, int pL, ostream& outf, char wordPortion[]);
+
+void printWordPortion(int& pL, ostream& outf, char wordPortion[]){
+    for (int k = 0; k < pL; k++){
+        outf << wordPortion[k];
+    }
+}
+
+void printWordPortion2(int& lL, int& pL, ostream& outf, char wordPortion[]){
+    lL = 0;
+    for (int k = 0; k < pL; k++){
+        outf << wordPortion[k];
+        lL++;
+    }
+}
+
+void printWordPortion3(int situation, int lineLength, int lL, int& lLa, int pL, ostream& outf, char wordPortion[]){
+    int q;
+    int lLb = 0;
+    if (pL <= lineLength){
+        outf << '\n';
+        printWordPortion(pL, outf, wordPortion);
+        lLa = 0;
+    }
+    else{
+        situation = 1; //return 1
+        int t = lineLength - lL;
+        printWordPortion(t, outf, wordPortion); //print part of the portion
+        outf << '\n';
+        for (q = 0; q < ((pL - lineLength + lL)/lineLength); q++){ //print the protion in multiple lines until it fits: print the lines
+            for (int k = 0; k < lineLength; k++){
+                outf << wordPortion[k + lineLength - lL + q*lineLength];
+            }
+            outf << '\n';
+        }
+        for (int k = 0; k < (pL - lineLength + lL)%lineLength; k++){ //print the protion in multiple lines until it fits: print the last line
+            outf << wordPortion[k + lineLength - lL + q*lineLength];
+            lLb++;
+        }
+        lLa = lLb;
+    }
+}
+
 int stuff(int lineLength, istream& inf, ostream& outf){
     char c;
     char d;
@@ -30,136 +75,81 @@ int stuff(int lineLength, istream& inf, ostream& outf){
         else{
             d = c;
         }
-        if (d != ' ' || d != '-'){ //get the next word portion
+        if (d != ' ' && d != '-'){ //get the next word portion
             wordPortion[pL] = d;
             pL++;
-            lL++;
         } //the printing only happens when a portion is stored
         else{
-            if (d == '-'){
-                wordPortion[pL] = d;
-                nextLastChar = '-';
-                pL++;
-                lL++;
+            if (d == ' '){
+                nextLastChar = ' ';
             }
             else{
-                nextLastChar = ' ';
+                wordPortion[pL] = d;
+                pL++;
+                nextLastChar = '-';
             }
             if (pL < lineLength - lL){ //if fit in the line even if adding a space, print the portion
                 if (lastChar == '\n' || lastChar == '-'){ //if it's the first in a line, or following a portion from the same word
-                    for (int k = 0; k < pL; k++){ //print it right after
-                        outf << wordPortion[k];
-                    }
-                    lastChar = nextLastChar;
+                    printWordPortion(pL, outf, wordPortion); //print it right after
                 }
                 else{ //if it's the frist of a word and not the first of a line, print a space before
                     outf << ' ';
                     lL++;
-                    for (int k = 0; k < pL; k++){ //print it right after a space
-                        outf << wordPortion[k];
-                    }
-                    lastChar = nextLastChar;
+                    printWordPortion(pL, outf, wordPortion); //print it right after a space
                 }
+                lastChar = nextLastChar;
+                lL += pL;
             }
             else if (pL == lineLength - lL){ //if fit in line only if not adding a space
                 if (lastChar == '\n' || lastChar == '-'){ //if it's the first in a line, or following a portion from the same word
-                    for (int k = 0; k < pL; k++){ //print it right after
-                        outf << wordPortion[k];
-                    }
+                    printWordPortion(pL, outf, wordPortion); //print it right after
                     outf << '\n';
                     lastChar = '\n';
+                    lL = 0;
                 }
                 else{
                     outf << '\n';
-                    lL = 0;
-                    for (int k = 0; k < pL; k++){  //print it right after an enter
-                        outf << wordPortion[k];
-                        lL++;
-                    }
+                    printWordPortion2(lL, pL, outf, wordPortion); //print it right after an enter and keep track of lL
                     lastChar = nextLastChar;
+                    lL = lL + pL;
                 }
             }
             else{ //if not fit in a line
-                int q;
-                int lLb = 0;
-                if (lL == 0){
-                    situation = 1; //return 1
-                }
-                for (int k = 0; k < lineLength - lL; k++){ //print part of the portion
-                    outf << wordPortion[k];
-                }
-                outf << '\n';
-                for (q = 0; q < ((pL - lineLength + lL)/lineLength); q++){ //print the protion in multiple lines until it fits: print the lines
-                    for (int k = 0; k < lineLength; k++){
-                        outf << wordPortion[k + lineLength - lL + q*lineLength];
-                        outf << '\n';
-                    }
-                }
-                for (int k = 0; k < (pL - lineLength + lL)%lineLength; k++){ //print the protion in multiple lines until it fits: print the last line
-                    outf << wordPortion[k + lineLength - lL + q*lineLength];
-                    lLb++;
-                }
+                int lLa;
+                printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion);
+                lL = lLa;
                 lastChar = nextLastChar;
-                lL = lLb;
             }
             pL = 0;
         }
     }
     if (pL < lineLength - lL){ //if fit in the line even if adding a space, print the portion
         if (lastChar == '\n' || lastChar == '-'){ //if it's the first in a line, or following a portion from the same word
-            for (int k = 0; k < pL; k++){ //print it right after
-                outf << wordPortion[k];
-            }
+            printWordPortion(pL, outf, wordPortion);
             outf << '\n';
         }
         else{ //if it's the frist of a word and not the first of a line, print a space before
             outf << ' ';
-            lL++;
-            for (int k = 0; k < pL; k++){ //print it right after a space
-                outf << wordPortion[k];
-            }
+            printWordPortion(pL, outf, wordPortion);
             outf << '\n';
         }
     }
     else if (pL == lineLength - lL){ //if fit in line only if not adding a space
         if (lastChar == '\n' || lastChar == '-'){ //if it's the first in a line, or following a portion from the same word
-            for (int k = 0; k < pL; k++){ //print it right after
-                outf << wordPortion[k];
-            }
+            printWordPortion(pL, outf, wordPortion);
             outf << '\n';
         }
         else{
             outf << '\n';
-            lL = 0;
-            for (int k = 0; k < pL; k++){  //print it right after an enter
-                outf << wordPortion[k];
-                lL++;
-            }
+            printWordPortion(pL, outf, wordPortion);
             outf << '\n';
         }
     }
     else{ //if not fit in a line
-        int q;
-        int lLb = 0;
-        if (lL == 0){
-            situation = 1; //return 1
-        }
-        for (int k = 0; k < lineLength - lL; k++){ //print part of the portion
-            outf << wordPortion[k];
-        }
+        int lLa;
+        printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion);
+        lL = lLa;
         outf << '\n';
-        for (q = 0; q < ((pL - lineLength + lL)/lineLength); q++){ //print the protion in multiple lines until it fits: print the lines
-            for (int k = 0; k < lineLength; k++){
-                outf << wordPortion[k + lineLength - lL + q*lineLength];
-                outf << '\n';
-            }
-        }
-        for (int k = 0; k < (pL - lineLength + lL)%lineLength; k++){ //print the protion in multiple lines until it fits: print the last line
-            outf << wordPortion[k + lineLength - lL + q*lineLength];
-            lLb++;
-            outf << '\n';
-        }
-        lL = lLb;
     }
     return situation;
 }
