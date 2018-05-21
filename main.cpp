@@ -29,7 +29,7 @@ void printWordPortion2(int& lL, int& pL, ostream& outf, char wordPortion[]){
     }
 }
 
-void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL, ostream& outf, char wordPortion[], char lastChar){
+void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL, ostream& outf, char wordPortion[], char lastChar, char& nextLastChar){
     int q;
     int lLb = 0;
     if (pL <= lineLength){
@@ -53,15 +53,26 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
             }
         }
         outf << '\n';
-        for (q = 0; q < ((pL - s)/lineLength); q++){ //print the protion in multiple lines until it fits: print the lines
+        q = 0;
+        while (q < ((pL - s)/lineLength) - 1){ //print the protion in multiple lines until it fits: print the lines
+            for (int k = 0; k < lineLength; k++){
+                outf << wordPortion[k + s + q*lineLength];
+            }
+            q++;
+            outf << '\n';
+        }
+        if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
             for (int k = 0; k < lineLength; k++){
                 outf << wordPortion[k + s + q*lineLength];
             }
             outf << '\n';
+            nextLastChar = '-';
         }
-        for (int k = 0; k < (pL - s)%lineLength; k++){ //print the protion in multiple lines until it fits: print the last line
-            outf << wordPortion[k + s + q*lineLength];
-            lLb++;
+        else{
+            for (int k = 0; k < pL - s - (q*lineLength); k++){ //print the protion in multiple lines until it fits: print the last line
+                outf << wordPortion[k + s + q*lineLength];
+                lLb++;
+            }
         }
         lLa = lLb;
     }
@@ -132,7 +143,7 @@ int stuff(int lineLength, istream& inf, ostream& outf){
             }
             else{ //if not fit in a line
                 int lLa;
-                printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion, lastChar);
+                printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion, lastChar, nextLastChar);
                 lL = lLa;
                 lastChar = nextLastChar;
             }
@@ -168,10 +179,54 @@ int stuff(int lineLength, istream& inf, ostream& outf){
     }
     else{ //if not fit in a line
         int lLa;
-        printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion, lastChar);
+        int q;
+        int lLb = 0;
+        if (pL <= lineLength){
+            outf << '\n';
+            printWordPortion(pL, outf, wordPortion);
+            lLa = pL;
+        }
+        else{
+            situation = 1; //return 1
+            int t;
+            int s = 0;
+            if (lastChar == ' '){
+                if ((t = lineLength - lL - 1) > 0){
+                    outf << ' ';
+                    printWordPortion2(s, t, outf, wordPortion); //print part of the portion
+                }
+            }
+            else{
+                if ((t = lineLength - lL) > 0){
+                    printWordPortion2(s, t, outf, wordPortion); //print part of the portion
+                }
+            }
+            outf << '\n';
+            q = 0;
+            while (q < ((pL - s)/lineLength) - 1){ //print the protion in multiple lines until it fits: print the lines
+                for (int k = 0; k < lineLength; k++){
+                    outf << wordPortion[k + s + q*lineLength];
+                }
+                q++;
+                outf << '\n';
+            }
+            if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
+                for (int k = 0; k < lineLength; k++){
+                    outf << wordPortion[k + s + q*lineLength];
+                }
+                nextLastChar = '-';
+            }
+            else{
+                for (int k = 0; k < pL - s - (q*lineLength); k++){ //print the protion in multiple lines until it fits: print the last line
+                    outf << wordPortion[k + s + q*lineLength];
+                    lLb++;
+                }
+            }
+            lLa = lLb;
+        }
         lL = lLa;
-        outf << '\n';
     }
+    outf << '\n';
     return situation;
 }
 
