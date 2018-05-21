@@ -61,7 +61,13 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
             q++;
             outf << '\n';
         }
-        if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
+        if (pL - s < lineLength){
+            for (int k = 0; k < pL - s; k++){
+                outf << wordPortion[k + s];
+                lLb++;
+            }
+        }
+        else if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
             for (int k = 0; k < lineLength; k++){
                 outf << wordPortion[k + s + q*lineLength];
             }
@@ -69,6 +75,11 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
             nextLastChar = '-';
         }
         else{
+            for (int k = 0; k < lineLength; k++){
+                outf << wordPortion[k + s + q*lineLength];
+            }
+            outf << '\n';
+            q++;
             for (int k = 0; k < pL - s - (q*lineLength); k++){ //print the protion in multiple lines until it fits: print the last line
                 outf << wordPortion[k + s + q*lineLength];
                 lLb++;
@@ -130,15 +141,13 @@ int stuff(int lineLength, istream& inf, ostream& outf){
             else if (pL == lineLength - lL){ //if fit in line only if not adding a space     problem of repeating '\n's
                 if (lastChar == '-'){ //if it's the first in a line, or following a portion from the same word
                     printWordPortion(pL, outf, wordPortion); //print it right after
-                    outf << '\n';
-                    lastChar = '-';
-                    lL = 0;
+                    lL = lL + pL;
                 }
                 else{
                     outf << '\n';
                     printWordPortion2(lL, pL, outf, wordPortion); //print it right after an enter and keep track of lL
                     lastChar = nextLastChar;
-                    lL = lL + pL;
+                    lL = pL;
                 }
             }
             else{ //if not fit in a line
@@ -163,8 +172,8 @@ int stuff(int lineLength, istream& inf, ostream& outf){
         }
         else{
             printWordPortion(pL, outf, wordPortion);
-            outf << '\n';
         }
+        outf << '\n';
     }
     else if (pL == lineLength - lL){ //if fit in line only if not adding a space
         if (lastChar == '\n' || lastChar == '-'){ //if it's the first in a line, or following a portion from the same word
@@ -185,6 +194,7 @@ int stuff(int lineLength, istream& inf, ostream& outf){
             outf << '\n';
             printWordPortion(pL, outf, wordPortion);
             lLa = pL;
+            outf << '\n';
         }
         else{
             situation = 1; //return 1
@@ -210,23 +220,34 @@ int stuff(int lineLength, istream& inf, ostream& outf){
                 q++;
                 outf << '\n';
             }
-            if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
+            if (pL - s < lineLength){
+                for (int k = 0; k < pL - s; k++){
+                    outf << wordPortion[k + s];
+                }
+                outf << '\n';
+            }
+            else if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
                 for (int k = 0; k < lineLength; k++){
                     outf << wordPortion[k + s + q*lineLength];
                 }
                 nextLastChar = '-';
+                outf << '\n';
             }
             else{
+                for (int k = 0; k < lineLength; k++){
+                    outf << wordPortion[k + s + q*lineLength];
+                }
+                q++;
                 for (int k = 0; k < pL - s - (q*lineLength); k++){ //print the protion in multiple lines until it fits: print the last line
                     outf << wordPortion[k + s + q*lineLength];
                     lLb++;
                 }
+                outf << '\n';
             }
             lLa = lLb;
         }
         lL = lLa;
     }
-    outf << '\n';
     return situation;
 }
 
