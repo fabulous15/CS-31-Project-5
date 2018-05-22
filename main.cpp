@@ -10,20 +10,14 @@
 #include <fstream>
 using namespace std;
 
-void printWordPortion1(int& lL, int pL, int move, ostream& outf, char wordPortion[]){
+void printWordPortion0(int pL, int move, ostream& outf, char wordPortion[]){
     for (int k = 0; k < pL; k++){
         outf << wordPortion[k + move];
-        lL++;
     }
 }
 
-void printWordPortion0(int pL, int move, ostream& outf, char wordPortion[]){
-    int i = 0;
-    printWordPortion1(i, pL, move, outf, wordPortion);
-}
-
-void normalSituation1(int pL, int lineLength, int& lL, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
-    if ((lastChar == ' ' && (realLastChar == '.' || realLastChar == '?')) && pL < lineLength - lL - 1){ //if fit in the line even if adding two space, print the portion
+void normalSituation(int pL, int lineLength, int& lL, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
+    if ((lastChar == ' ' && (realLastChar == '.' || realLastChar == '?')) && pL < lineLength - lL - 1){
         outf << ' ' << ' ';
         lL = lL + 2;
     }
@@ -53,10 +47,11 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
             if (lastChar == ' ' && (realLastChar == '.' || realLastChar == '?') && (t = lineLength - lL - 2) > 0){
                 outf << ' ' << ' ';
             }
-            else if (lastChar == ' ' && (t = lineLength - lL - 1) > 0){
+            else if (lastChar == ' ' && (realLastChar != '.' && realLastChar != '?') && (t = lineLength - lL - 1) > 0){
                 outf << ' ';
             }
-            printWordPortion1(s, t, 0, outf, wordPortion); //print part of the portion
+            printWordPortion0(t, 0, outf, wordPortion); //print part of the portion
+            s = s + t;
         }
         outf << '\n';
         int q = 0;
@@ -68,7 +63,8 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
         }
         if (pL - s < lineLength){
             int g = pL - s;
-            printWordPortion1(lLa, g, s, outf, wordPortion);
+            printWordPortion0(g, s, outf, wordPortion);
+            lLa = g;
         }
         else if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
             int g = s + q*lineLength;
@@ -81,7 +77,8 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
             outf << '\n';
             g = s + (q + 1)*lineLength;
             int h = pL - s - ((q + 1)*lineLength);
-            printWordPortion1(lLa, h, g, outf, wordPortion); //print the protion in multiple lines until it fits: print the last line
+            printWordPortion0(h, g, outf, wordPortion); //print the protion in multiple lines until it fits: print the last line
+            lLa = h;
         }
     }
 }
@@ -102,6 +99,9 @@ int stuff(int lineLength, istream& inf, ostream& outf){
     if (lineLength < 1){
         return 2;
     }
+    if (!inf.get(c)){
+        return 0;
+    }
     while (inf.get(c)){
         if (c == '\n'){
             d = ' ';
@@ -121,7 +121,7 @@ int stuff(int lineLength, istream& inf, ostream& outf){
                 realNextLastChar = 'i';
                 wordPortion[pL] = d;
                 pL++;
-            }            
+            }
             else{
                 nextLastChar = ' ';
                 realNextLastChar = wordPortion[pL - 1];
@@ -140,7 +140,7 @@ int stuff(int lineLength, istream& inf, ostream& outf){
                     lastChar = '-';
                 }
                 if (pL <= lineLength - lL){
-                    normalSituation1(pL, lineLength, lL, outf, wordPortion, lastChar, realLastChar);
+                    normalSituation(pL, lineLength, lL, outf, wordPortion, lastChar, realLastChar);
                 }
                 else{ //if not fit in a line
                     int lLa = 0;
@@ -156,7 +156,7 @@ int stuff(int lineLength, istream& inf, ostream& outf){
         }
     }
     if ((pL != 3 || wordPortion[0] != '#' || wordPortion[1] != 'P' || wordPortion[2] != '#') && start == 1 && pL <= lineLength - lL){
-        normalSituation1(pL, lineLength, lL, outf, wordPortion, lastChar, realLastChar);
+        normalSituation(pL, lineLength, lL, outf, wordPortion, lastChar, realLastChar);
     }
     else if ((pL != 3 || wordPortion[0] != '#' || wordPortion[1] != 'P' || wordPortion[2] != '#') && start == 1){ //if not fit in a line
         int lLa = 0;
