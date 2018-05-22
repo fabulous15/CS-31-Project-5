@@ -1,11 +1,3 @@
-//
-//  main.cpp
-//  CS 31 Project 5
-//
-//  Created by Guoran Ye on 5/17/18.
-//  Copyright © 2018 Guoran Ye. All rights reserved.
-//
-
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -16,16 +8,16 @@ void printWordPortion0(int pL, int move, ostream& outf, char wordPortion[]){
     }
 }
 
-void normalSituation(int pL, int lineLength, int& lL, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
+void normalSituation(int pL, int lineLength, int& lL, int hyphon, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
     if ((lastChar == ' ' && (realLastChar == '.' || realLastChar == '?')) && pL < lineLength - lL - 1){
         outf << ' ' << ' ';
         lL = lL + 2;
     }
-    else if ((lastChar == ' ' && (realLastChar == '.' || realLastChar == '?')) || (lastChar == ' ' && pL == lineLength - lL)){
+    else if ((lastChar == ' ' && (realLastChar == '.' || realLastChar == '?')) || ((lastChar == ' ' || hyphon >= 2) && pL == lineLength - lL) ){
         outf << '\n';
         lL = 0;
     }
-    else if (lastChar == ' '){
+    else if (lastChar == ' ' || hyphon >= 2){
         outf << ' ';
         lL++;
     }
@@ -33,11 +25,11 @@ void normalSituation(int pL, int lineLength, int& lL, ostream& outf, char wordPo
     lL = lL + pL;
 }
 
-void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
+void printWordPortion3(int& situation, int lineLength, int& lL, int pL, int hyphon, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
     if (pL <= lineLength){
         outf << '\n';
         printWordPortion0(pL, 0, outf, wordPortion);
-        lLa = pL;
+        lL = pL;
     }
     else{
         situation = 1; //return 1
@@ -47,7 +39,7 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
             if (lastChar == ' ' && (realLastChar == '.' || realLastChar == '?') && (t = lineLength - lL - 2) > 0){
                 outf << ' ' << ' ';
             }
-            else if (lastChar == ' ' && (realLastChar != '.' && realLastChar != '?') && (t = lineLength - lL - 1) > 0){
+            else if (((lastChar == ' ' && realLastChar != '.' && realLastChar != '?') || hyphon >= 2) && (t = lineLength - lL - 1) > 0){
                 outf << ' ';
             }
             printWordPortion0(t, 0, outf, wordPortion); //print part of the portion
@@ -56,36 +48,29 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
         outf << '\n';
         int q = 0;
         while (q < ((pL - s)/lineLength) - 1){ //print the protion in multiple lines until it fits: print the lines
-            int g = s + q*lineLength;
-            printWordPortion0(lineLength, g, outf, wordPortion);
+            printWordPortion0(lineLength, (s + q*lineLength), outf, wordPortion);
             outf << '\n';
             q++;
         }
         if (pL - s < lineLength){
-            int g = pL - s;
-            printWordPortion0(g, s, outf, wordPortion);
-            lLa = g;
+            printWordPortion0((pL - s), s, outf, wordPortion);
+            lL = pL - s;
         }
         else if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
-            int g = s + q*lineLength;
-            printWordPortion0(lineLength, g, outf, wordPortion);
-            lLa = lineLength;
+            printWordPortion0(lineLength, (s + q*lineLength), outf, wordPortion);
+            lL = lineLength;
         }
         else{
-            int g = s + q*lineLength;
-            printWordPortion0(lineLength, g, outf, wordPortion);
+            printWordPortion0(lineLength, (s + q*lineLength), outf, wordPortion);
             outf << '\n';
-            g = s + (q + 1)*lineLength;
-            int h = pL - s - ((q + 1)*lineLength);
-            printWordPortion0(h, g, outf, wordPortion); //print the protion in multiple lines until it fits: print the last line
-            lLa = h;
-        }
+            printWordPortion0((pL - s - (q + 1)*lineLength), (s + (q + 1)*lineLength), outf, wordPortion);
+            lL = pL - s - (q + 1)*lineLength;
+        } //print the protion in multiple lines until it fits: print the last line
     }
 }
 
 int stuff(int lineLength, istream& inf, ostream& outf){
     char c;
-    char d;
     char lastChar = '-';
     char realLastChar = 'i';
     char nextLastChar;
@@ -96,41 +81,47 @@ int stuff(int lineLength, istream& inf, ostream& outf){
     int start = 0;
     int situation = 0;
     int changeLine = 0;
+    int hyphon = 0;
     if (lineLength < 1){
         return 2;
     }
     if (!inf.get(c)){
         return 0;
     }
+    if (c != ' ' && c!= '\n' && c != '-'){
+        wordPortion[pL] = c;
+        start = 1;
+        pL++;
+    }
+    else if (c == '-'){
+        outf << '-';
+        lL++;
+    }
     while (inf.get(c)){
-        if (c == '\n'){
-            d = ' ';
-        }
-        else{
-            d = c;
-        } //turn enter into space
-        if ((d != ' ') && (d != '-')){ //get the next word portion
-            wordPortion[pL] = d;
+        if ((c != ' ') && (c != '-') && c!= '\n'){ //get the next word portion
+            wordPortion[pL] = c;
             start = 1;
             pL++;
         } //the printing only happens when a portion is stored
         else{
-            if (d == '-'){
+            if (c == '-'){
+                wordPortion[pL] = c;
+                pL++;
                 start = 1;
                 nextLastChar = '-';
                 realNextLastChar = 'i';
-                wordPortion[pL] = d;
-                pL++;
             }
             else{
+                if (lastChar == '-'){
+                    hyphon++;
+                }
                 nextLastChar = ' ';
                 realNextLastChar = wordPortion[pL - 1];
                 if (pL == 3 && wordPortion[0] == '#' && wordPortion[1] == 'P' && wordPortion[2] == '#'){
                     if (lL != 0){
                         changeLine = 1;
                     }
-                    pL = 0;
-                    start = 0;
+                    pL = start = hyphon = 0;
                 }
             }
             if (start == 1){
@@ -140,27 +131,22 @@ int stuff(int lineLength, istream& inf, ostream& outf){
                     lastChar = '-';
                 }
                 if (pL <= lineLength - lL){
-                    normalSituation(pL, lineLength, lL, outf, wordPortion, lastChar, realLastChar);
+                    normalSituation(pL, lineLength, lL, hyphon, outf, wordPortion, lastChar, realLastChar);
                 }
-                else{ //if not fit in a line
-                    int lLa = 0;
-                    printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion, lastChar, realLastChar);
-                    lL = lLa;
+                else{
+                    printWordPortion3(situation, lineLength, lL, pL,hyphon, outf, wordPortion, lastChar, realLastChar);
                 }
                 lastChar = nextLastChar;
                 realLastChar = realNextLastChar;
-                pL = 0;
-                start = 0;
-                changeLine = 0;
+                pL = start = changeLine = hyphon = 0;
             }
         }
     }
     if ((pL != 3 || wordPortion[0] != '#' || wordPortion[1] != 'P' || wordPortion[2] != '#') && start == 1 && pL <= lineLength - lL){
-        normalSituation(pL, lineLength, lL, outf, wordPortion, lastChar, realLastChar);
+        normalSituation(pL, lineLength, lL, hyphon, outf, wordPortion, lastChar, realLastChar);
     }
-    else if ((pL != 3 || wordPortion[0] != '#' || wordPortion[1] != 'P' || wordPortion[2] != '#') && start == 1){ //if not fit in a line
-        int lLa = 0;
-        printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion, lastChar, realLastChar);
+    else if ((pL != 3 || wordPortion[0] != '#' || wordPortion[1] != 'P' || wordPortion[2] != '#') && start == 1){
+        printWordPortion3(situation, lineLength, lL,  pL, hyphon, outf, wordPortion, lastChar, realLastChar);
     }
     outf << '\n';
     return situation;
