@@ -46,7 +46,7 @@ void printWordPortion3(int& situation, int lineLength, int& lL, int pL, int hyph
     if ((t = pL - s) < lineLength){
         printWordPortion0((pL - s), s, outf, wordPortion);
     }
-    else if (pL - s - q*lineLength == (t = lineLength)|| pL - s == (t = lineLength)){
+    else if (pL - s - q*lineLength == (t = lineLength)){
         printWordPortion0(lineLength, (s + q*lineLength), outf, wordPortion);
     }
     else{
@@ -59,7 +59,7 @@ void printWordPortion3(int& situation, int lineLength, int& lL, int pL, int hyph
 
 int stuff(int lineLength, istream& inf, ostream& outf){
     char wordPortion[140];
-    char c, lastChar = '-', realLastChar = 'i', nextLastChar, realNextLastChar = 'i';
+    char c, lastChar = 'i', realLastChar = 'i', nextLastChar = 'i', realNextLastChar = 'i';
     int pL = 0, lL = 0, start = 0, situation = 0, changeLine = 0, hyphon = 0;
     if (lineLength < 1)
         return 2;
@@ -92,7 +92,9 @@ int stuff(int lineLength, istream& inf, ostream& outf){
             if (lastChar == '-'){
                 hyphon++;
             }
-            nextLastChar = ' ';
+            if (start == 1){
+                nextLastChar = ' ';
+            }
             realNextLastChar = wordPortion[pL - 1];
             if (pL == 3 && wordPortion[0] == '#' && wordPortion[1] == 'P' && wordPortion[2] == '#'){
                 if (lL != 0){
