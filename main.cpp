@@ -33,8 +33,7 @@ void printWordPortion3(int& situation, int lineLength, int& lL, int pL, int hyph
     }
     else{
         situation = 1; //return 1
-        int s = 0;
-        int t;
+        int t, s = 0, q = 0;
         if ((t = lineLength - lL) > 0){
             if (lastChar == ' ' && (realLastChar == '.' || realLastChar == '?') && (t = lineLength - lL - 2) > 0){
                 outf << ' ' << ' ';
@@ -46,42 +45,30 @@ void printWordPortion3(int& situation, int lineLength, int& lL, int pL, int hyph
             s = s + t;
         }
         outf << '\n';
-        int q = 0;
         while (q < ((pL - s)/lineLength) - 1){ //print the protion in multiple lines until it fits: print the lines
             printWordPortion0(lineLength, (s + q*lineLength), outf, wordPortion);
             outf << '\n';
             q++;
         }
-        if (pL - s < lineLength){
+        if ((t = pL - s) < lineLength){
             printWordPortion0((pL - s), s, outf, wordPortion);
-            lL = pL - s;
         }
-        else if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
+        else if (pL - s - q*lineLength == (t = lineLength)|| pL - s == (t = lineLength)){
             printWordPortion0(lineLength, (s + q*lineLength), outf, wordPortion);
-            lL = lineLength;
         }
         else{
             printWordPortion0(lineLength, (s + q*lineLength), outf, wordPortion);
             outf << '\n';
-            printWordPortion0((pL - s - (q + 1)*lineLength), (s + (q + 1)*lineLength), outf, wordPortion);
-            lL = pL - s - (q + 1)*lineLength;
+            printWordPortion0((t = pL - s - (q + 1)*lineLength), (s + (q + 1)*lineLength), outf, wordPortion);
         } //print the protion in multiple lines until it fits: print the last line
+        lL = t;
     }
 }
 
 int stuff(int lineLength, istream& inf, ostream& outf){
-    char c;
-    char lastChar = '-';
-    char realLastChar = 'i';
-    char nextLastChar;
-    char realNextLastChar = 'i';
     char wordPortion[140];
-    int pL = 0;
-    int lL = 0;
-    int start = 0;
-    int situation = 0;
-    int changeLine = 0;
-    int hyphon = 0;
+    char c, lastChar = '-', realLastChar = 'i', nextLastChar, realNextLastChar = 'i';
+    int pL = 0, lL = 0, start = 0, situation = 0, changeLine = 0, hyphon = 0;
     if (lineLength < 1){
         return 2;
     }
