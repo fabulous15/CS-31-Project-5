@@ -69,12 +69,10 @@ int stuff(int lineLength, istream& inf, ostream& outf){
     char wordPortion[140];
     char c, lastChar = '-', realLastChar = 'i', nextLastChar, realNextLastChar = 'i';
     int pL = 0, lL = 0, start = 0, situation = 0, changeLine = 0, hyphon = 0;
-    if (lineLength < 1){
+    if (lineLength < 1)
         return 2;
-    }
-    if (!inf.get(c)){
+    if (!inf.get(c))
         return 0;
-    }
     if (c != ' ' && c!= '\n' && c != '-'){
         wordPortion[pL] = c;
         start = 1;
@@ -89,44 +87,43 @@ int stuff(int lineLength, istream& inf, ostream& outf){
             wordPortion[pL] = c;
             start = 1;
             pL++;
-        } //the printing only happens when a portion is stored
+            continue; //the printing only happens when a complete portion is stored
+        }
+        if (c == '-'){
+            wordPortion[pL] = c;
+            pL++;
+            start = 1;
+            nextLastChar = '-';
+            realNextLastChar = 'i';
+        }
         else{
-            if (c == '-'){
-                wordPortion[pL] = c;
-                pL++;
-                start = 1;
-                nextLastChar = '-';
-                realNextLastChar = 'i';
+            if (lastChar == '-'){
+                hyphon++;
+            }
+            nextLastChar = ' ';
+            realNextLastChar = wordPortion[pL - 1];
+            if (pL == 3 && wordPortion[0] == '#' && wordPortion[1] == 'P' && wordPortion[2] == '#'){
+                if (lL != 0){
+                    changeLine = 1;
+                }
+                pL = start = hyphon = 0;
+            }
+        }
+        if (start == 1){
+            if (changeLine == 1){ //to avoid returning before the first line and after the last line
+                outf << '\n' << '\n';
+                lL = 0;
+                lastChar = '-';
+            }
+            if (pL <= lineLength - lL){
+                normalSituation(pL, lineLength, lL, hyphon, outf, wordPortion, lastChar, realLastChar);
             }
             else{
-                if (lastChar == '-'){
-                    hyphon++;
-                }
-                nextLastChar = ' ';
-                realNextLastChar = wordPortion[pL - 1];
-                if (pL == 3 && wordPortion[0] == '#' && wordPortion[1] == 'P' && wordPortion[2] == '#'){
-                    if (lL != 0){
-                        changeLine = 1;
-                    }
-                    pL = start = hyphon = 0;
-                }
+                printWordPortion3(situation, lineLength, lL, pL,hyphon, outf, wordPortion, lastChar, realLastChar);
             }
-            if (start == 1){
-                if (changeLine == 1){ //to avoid returning before the first line and after the last line
-                    outf << '\n' << '\n';
-                    lL = 0;
-                    lastChar = '-';
-                }
-                if (pL <= lineLength - lL){
-                    normalSituation(pL, lineLength, lL, hyphon, outf, wordPortion, lastChar, realLastChar);
-                }
-                else{
-                    printWordPortion3(situation, lineLength, lL, pL,hyphon, outf, wordPortion, lastChar, realLastChar);
-                }
-                lastChar = nextLastChar;
-                realLastChar = realNextLastChar;
-                pL = start = changeLine = hyphon = 0;
-            }
+            lastChar = nextLastChar;
+            realLastChar = realNextLastChar;
+            pL = start = changeLine = hyphon = 0;
         }
     }
     if ((pL != 3 || wordPortion[0] != '#' || wordPortion[1] != 'P' || wordPortion[2] != '#') && start == 1 && pL <= lineLength - lL){
@@ -150,8 +147,7 @@ int main()
         if (strcmp(filename, "q") == 0)
             break;
         ifstream infile(filename);
-        if (!infile)
-        {
+        if (!infile){
             cerr << "Cannot open " << filename << "!" << endl;
             continue;
         }
