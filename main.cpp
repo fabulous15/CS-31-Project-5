@@ -54,7 +54,7 @@ void printFirstPart(int& s, int lineLength, int lL, ostream& outf, char wordPort
     outf << '\n';
 }
 
-void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL, ostream& outf, char wordPortion[], char lastChar, char& nextLastChar, char realLastChar){
+void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
     int q;
     int lLb = 0;
     if (pL <= lineLength){
@@ -80,8 +80,7 @@ void printWordPortion3(int& situation, int lineLength, int lL, int& lLa, int pL,
         else if (pL - s - q*lineLength == lineLength || pL - s == lineLength){
             int g = s + q*lineLength;
             printWordPortion0(lineLength, g, outf, wordPortion);
-            outf << '\n';
-            nextLastChar = '\n';
+            lLb = lineLength;
         }
         else{
             int g = s + q*lineLength;
@@ -134,7 +133,7 @@ void normalSituation1(int pL, int lineLength, int& lL, ostream& outf, char wordP
         }
     }
     else if (pL == lineLength - lL){ //if fit in line only if not adding a space     problem of repeating '\n's
-        if (lastChar == '-' || lastChar == '\n'){ //if it's the first in a line, or following a portion from the same word
+        if (lastChar == '-'){ //if it's the first in a line, or following a portion from the same word
             printWordPortion(pL, outf, wordPortion); //print it right after
             lL = lL + pL;
         }
@@ -146,10 +145,35 @@ void normalSituation1(int pL, int lineLength, int& lL, ostream& outf, char wordP
     }
 }
 
+int para(char wordPortion[], int pL){
+    if ((pL%3) != 0){
+        return 0;
+    }
+    if (pL == 0){
+        return 0;
+    }
+    for (int j = 0; j < pL; j = j + 3){
+        if (wordPortion[j] != '#'){
+            return 0;
+        }
+    }
+    for (int j = 1; j < pL; j = j + 3){
+        if (wordPortion[j] != 'P'){
+            return 0;
+        }
+    }
+    for (int j = 2; j < pL; j = j + 3){
+        if (wordPortion[j] != '#'){
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int stuff(int lineLength, istream& inf, ostream& outf){
     char c;
     char d;
-    char lastChar = '\n';
+    char lastChar = '-';
     char realLastChar = 'i';
     char nextLastChar;
     char realNextLastChar = 'i';
@@ -158,16 +182,17 @@ int stuff(int lineLength, istream& inf, ostream& outf){
     int lL = 0;
     int start = 0;
     int situation = 0;
+    int changeLine = 0;
     if (lineLength < 1){
         return 2;
     }
     while (inf.get(c)){
-        if (c == '\n'){ //turn enter into space
+        if (c == '\n'){
             d = ' ';
         }
         else{
             d = c;
-        }
+        } //turn enter into space
         if ((d != ' ') && (d != '-')){ //get the next word portion
             wordPortion[pL] = d;
             start = 1;
@@ -184,25 +209,33 @@ int stuff(int lineLength, istream& inf, ostream& outf){
             else{
                 nextLastChar = ' ';
                 realNextLastChar = wordPortion[pL - 1];
+                if (para(wordPortion, pL) == 1){
+                    if (lL != 0){
+                        changeLine = 1;
+                    }
+                    pL = 0;
+                    start = 0;
+                }
             }
             if (start == 1){
+                if (changeLine == 1){ //to avoid returning before the first line and after the last line
+                    outf << '\n' << '\n';
+                    lL = 0;
+                    lastChar = '-';
+                }
                 if (pL <= lineLength - lL){
                     normalSituation1(pL, lineLength, lL, outf, wordPortion, lastChar, realLastChar);
                 }
                 else{ //if not fit in a line
                     int lLa;
-                    printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion, lastChar, nextLastChar, realLastChar);
+                    printWordPortion3(situation, lineLength, lL, lLa, pL, outf, wordPortion, lastChar, realLastChar);
                     lL = lLa;
                 }
                 lastChar = nextLastChar;
                 realLastChar = realNextLastChar;
                 pL = 0;
                 start = 0;
-            }
-            else{
-                if (lastChar != '\n'){
-                    lastChar = ' ';
-                }
+                changeLine = 0;
             }
         }
     }
@@ -250,9 +283,7 @@ int stuff(int lineLength, istream& inf, ostream& outf){
         outf << '\n';
     }
     else{
-        if (lastChar != '\n'){
-            outf << '\n';
-        }
+        outf << '\n';
     }
     return situation;
 }
