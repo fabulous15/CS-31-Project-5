@@ -11,18 +11,17 @@ void printWordPortion0(int pL, int move, ostream& outf, char wordPortion[]){
 void normalSituation(int pL, int lineLength, int& lL, int hyphon, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
     if ((lastChar == ' ' && (realLastChar == '.' || realLastChar == '?')) && pL < lineLength - lL - 1){
         outf << ' ' << ' ';
-        lL += 2;
+        lL += (2 + pL);
     }
     else if (((lastChar == ' ' && realLastChar != '.' && realLastChar != '?') || hyphon >= 2) && pL < lineLength - lL){
         outf << ' ';
-        lL++;
+        lL += (1 + pL);
     }
     else if (lastChar == ' ' || hyphon >= 2 || pL > lineLength - lL){
         outf << '\n';
-        lL = 0;
+        lL = pL;
     }
     printWordPortion0(pL, 0, outf, wordPortion);
-    lL += pL;
 }
 
 void printWordPortion3(int& situation, int lineLength, int& lL, int pL, int hyphon, ostream& outf, char wordPortion[], char lastChar, char realLastChar){
