@@ -75,18 +75,14 @@ int stuff(int lineLength, istream& inf, ostream& outf){
         lL++;
     }
     while (inf.get(c)){
-        if ((c != ' ') && (c != '-') && c!= '\n'){ //get the next word portion
+        if (c != ' ' && c!= '\n'){ //get the next word portion
             wordPortion[pL] = c;
             start = 1;
             pL++;
-            continue; //the printing only happens when a complete portion is stored
-        }
-        if (c == '-'){
-            wordPortion[pL] = c;
-            pL++;
-            start = 1;
+            if (c != '-'){
+                continue; //the printing only happens when a complete portion is stored
+            }
             nextLastChar = '-';
-            realNextLastChar = 'i';
         }
         else{
             if (lastChar == '-'){
@@ -94,8 +90,8 @@ int stuff(int lineLength, istream& inf, ostream& outf){
             }
             if (start == 1){
                 nextLastChar = ' ';
+                realNextLastChar = wordPortion[pL - 1];
             }
-            realNextLastChar = wordPortion[pL - 1];
             if (pL == 3 && wordPortion[0] == '#' && wordPortion[1] == 'P' && wordPortion[2] == '#'){
                 if (lL != 0){
                     changeLine = 1;
